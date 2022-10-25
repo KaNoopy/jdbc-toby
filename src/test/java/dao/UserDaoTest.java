@@ -22,11 +22,15 @@ class UserDaoTest {
     void addAndFindById() throws SQLException, ClassNotFoundException {
         UserDao userDao = context.getBean("localUserDao",UserDao.class);
 //        UserDao userDao = new UserDaoFactory().localUserDao();
+        userDao.deleteAll();
+        Assertions.assertEquals(0,userDao.getCount());
         String id ="21";
         User user =new User(id,"kahyun","123456");
         userDao.add(user);
+        Assertions.assertEquals(1,userDao.getCount());
 
         User findUser = userDao.findById(id);
         Assertions.assertEquals("kahyun",findUser.getName());
+        Assertions.assertEquals("123456",findUser.getPassword());
     }
 }

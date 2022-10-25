@@ -13,6 +13,24 @@ public class UserDao {
         this.connectonMaker = new LocalConnection();
     }
 
+    public void deleteAll() throws SQLException {
+        Connection c = connectonMaker.makeConnection();
+        PreparedStatement ps = c.prepareStatement("delete from user");
+        ps.executeUpdate();
+        ps.close();
+        c.close();
+    }
+    public int getCount() throws SQLException {
+        Connection c = connectonMaker.makeConnection();
+        PreparedStatement ps = c.prepareStatement("select count(*) from user");
+        ResultSet rs =ps.executeQuery();
+        rs.next();
+        int cnt = rs.getInt(1);
+        rs.close();
+        ps.close();
+        c.close();
+        return cnt;
+    }
     public void add(User user) throws SQLException {
         Connection c = connectonMaker.makeConnection();
         PreparedStatement ps =c.prepareStatement("insert into user(id,name,password) values(?,?,?);");
