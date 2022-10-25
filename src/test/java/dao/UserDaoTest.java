@@ -3,10 +3,12 @@ package dao;
 import domain.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -46,4 +48,12 @@ class UserDaoTest {
         Assertions.assertEquals(user1.getPassword(),findUser.getPassword());
     }
 
+    @Test
+    @DisplayName("User가 NULL인경우 Exception")
+    void userNull(){
+        assertThrows(EmptyResultDataAccessException.class,()->{
+            userDao.deleteAll();
+            userDao.findById("0");
+        });
+    }
 }
