@@ -15,26 +15,68 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        Connection c = connectonMaker.makeConnection();
-        PreparedStatement ps = c.prepareStatement("delete from user");
-        ps.executeUpdate();
-        ps.close();
-        c.close();
+        Connection c = null;
+        PreparedStatement ps = null;
+        try {
+            c = connectonMaker.makeConnection();
+            ps = c.prepareStatement("delete from user");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
+
     public int getCount() throws SQLException {
-        Connection c = connectonMaker.makeConnection();
-        PreparedStatement ps = c.prepareStatement("select count(*) from user");
-        ResultSet rs =ps.executeQuery();
-        rs.next();
-        int cnt = rs.getInt(1);
-        rs.close();
-        ps.close();
-        c.close();
-        return cnt;
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int cnt = 0;
+        try {
+            c = connectonMaker.makeConnection();
+            ps = c.prepareStatement("select count(*) from user");
+            rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+                if (ps != null) {
+                    try {
+                        ps.close();
+                    } catch (SQLException e) {
+                    }
+                }
+                if (c != null) {
+                    try {
+                        c.close();
+                    } catch (SQLException e) {
+                    }
+                }
+            }
+        }
     }
+
     public void add(User user) throws SQLException {
         Connection c = connectonMaker.makeConnection();
-        PreparedStatement ps =c.prepareStatement("insert into user(id,name,password) values(?,?,?);");
+        PreparedStatement ps = c.prepareStatement("insert into user(id,name,password) values(?,?,?);");
         ps.setString(1, user.getId());
         ps.setString(2, user.getName());
         ps.setString(3, user.getPassword());
@@ -56,15 +98,15 @@ public class UserDao {
         ResultSet rs = ps.executeQuery();
         User user = null;
         if (rs.next()) {
-        user = new User(rs.getString("id"), rs.getString("name"),
-                rs.getString("password"));
+            user = new User(rs.getString("id"), rs.getString("name"),
+                    rs.getString("password"));
         }
 
         rs.close();
         ps.close();
         c.close();
 
-        if(user== null){
+        if (user == null) {
             throw new EmptyResultDataAccessException(1);
         }
         return user;
