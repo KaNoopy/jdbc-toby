@@ -7,9 +7,13 @@ import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
-    LocalConnectionMaker localConnectionMaker= new LocalConnectionMaker();
+    ConnectonMaker connectonMaker;
+
+    public UserDao() {
+        this.connectonMaker = new LocalConnection();
+    }
     public void add(User user) throws SQLException {
-        Connection c = localConnectionMaker.makeConnection();
+        Connection c = connectonMaker.makeConnection();
         PreparedStatement ps =c.prepareStatement("insert into user(id,name,password) values(?,?,?);");
         ps.setString(1, user.getId());
         ps.setString(2, user.getName());
@@ -21,7 +25,7 @@ public class UserDao {
     }
 
     public User findById(String id) throws SQLException, ClassNotFoundException {
-        Connection c = localConnectionMaker.makeConnection();
+        Connection c = connectonMaker.makeConnection();
 
         Class.forName("com.mysql.cj.jdbc.Driver");
 
