@@ -4,21 +4,22 @@ import domain.User;
 import net.bytebuddy.agent.VirtualMachine;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
-    ConnectonMaker connectonMaker;
+    private DataSource dataSource;
 
-    public UserDao(LocalConnection localConnection) {
-        this.connectonMaker = new LocalConnection();
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt)throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
 
         try {
-            c = connectonMaker.makeConnection();
+            c = dataSource.getConnection();
             ps = stmt.makePreparedStatement(c);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -71,7 +72,7 @@ public class UserDao {
         ResultSet rs = null;
         int cnt = 0;
         try {
-            c = connectonMaker.makeConnection();
+            c = dataSource.getConnection();
             ps = c.prepareStatement("select count(*) from user");
             rs = ps.executeQuery();
             rs.next();
@@ -113,7 +114,7 @@ public class UserDao {
     }
 
     public User findById(String id) throws SQLException, ClassNotFoundException {
-        Connection c = connectonMaker.makeConnection();
+        Connection c = dataSource.getConnection();
 
         Class.forName("com.mysql.cj.jdbc.Driver");
 
