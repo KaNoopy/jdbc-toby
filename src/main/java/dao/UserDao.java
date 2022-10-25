@@ -14,7 +14,8 @@ public class UserDao {
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    public void jdbcContextWithStatementStrategy(StatementStrategy stmt)throws SQLException {
+
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
 
@@ -39,6 +40,7 @@ public class UserDao {
             }
         }
     }
+
     public void deleteAll() throws SQLException {
 //        Connection c = null;
 //        PreparedStatement ps = null;
@@ -63,7 +65,12 @@ public class UserDao {
 //                }
 //            }
 //        }
-        jdbcContextWithStatementStrategy(new DeleteAllStrategy());
+        jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                return connection.prepareStatement("delete from user");
+            }
+        });
     }
 
     public int getCount() throws SQLException {
@@ -101,8 +108,17 @@ public class UserDao {
         }
     }
 
-    public void add(User user) throws SQLException {
-        jdbcContextWithStatementStrategy(new AddStrategy(user));
+    public void add(final User user) throws SQLException {
+        jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement("insert into user(id,name,password) values(?,?,?);");
+                ps.setString(1, user.getId());
+                ps.setString(2, user.getName());
+                ps.setString(3, user.getPassword());
+                return ps;
+            }
+        });
 //        Connection c = connectonMaker.makeConnection();
 //        PreparedStatement ps = new AddStrategy(user).makePreparedStatement(c);
 ////        ps.setString(1, user.getId());
