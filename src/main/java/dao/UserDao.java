@@ -3,103 +3,48 @@ package dao;
 import domain.User;
 import net.bytebuddy.agent.VirtualMachine;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.List;
 import java.util.Map;
 
 public class UserDao {
-    private DataSource dataSource;
-    private JdbcContext jdbcContext;
-
+    private JdbcTemplate jdbcTemplate;
     public UserDao(DataSource dataSource) {
-        this.dataSource = dataSource;
-        this.jdbcContext = new JdbcContext(dataSource);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     public void deleteAll() throws SQLException {
-        this.jdbcContext.executeSql("delete from user");
+        this.jdbcTemplate.update("delete from user");
     }
 
     public int getCount() throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int cnt = 0;
-        try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement("select count(*) from user");
-            rs = ps.executeQuery();
-            rs.next();
-            return rs.getInt(1);
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                }
-                if (ps != null) {
-                    try {
-                        ps.close();
-                    } catch (SQLException e) {
-                    }
-                }
-                if (c != null) {
-                    try {
-                        c.close();
-                    } catch (SQLException e) {
-                    }
-                }
-            }
-        }
+        return this.jdbcTemplate.queryForObject("select count(*) from user;",Integer.class);
     }
+
 
     public void add(final User user) throws SQLException {
-        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
-                PreparedStatement ps = connection.prepareStatement("insert into user(id,name,password) values(?,?,?);");
-                ps.setString(1, user.getId());
-                ps.setString(2, user.getName());
-                ps.setString(3, user.getPassword());
-                return ps;
-            }
-        });
-//        Connection c = connectonMaker.makeConnection();
-//        PreparedStatement ps = new AddStrategy(user).makePreparedStatement(c);
-////        ps.setString(1, user.getId());
-////        ps.setString(2, user.getName());
-////        ps.setString(3, user.getPassword());
-//        ps.executeUpdate();
-//        ps.close();
-//        c.close();
+        this.jdbcTemplate.update("insert into user(id,name,password) values(?,?,?);",
+                user.getId(), user.getName(),user.getPassword());
     }
 
+    RowMapper<User> rowMapper = new RowMapper<User>() {
+        @Override
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            User user = new User(rs.getString("id"),rs.getString("name"),rs.getString("password"));
+            return user;
+        }
+    };
     public User findById(String id) throws SQLException, ClassNotFoundException {
-        Connection c = dataSource.getConnection();
+        String sql="select * from user where id =?";
+        return this.jdbcTemplate.queryForObject(sql, rowMapper, id);
+    }
 
-        Class.forName("com.mysql.cj.jdbc.Driver");
-
-        PreparedStatement ps = c.prepareStatement(
-                "select * from user where id = ?");
-        ps.setString(1, id);
-
-        ResultSet rs = ps.executeQuery();
-        User user = null;
-        if (rs.next()) {
-            user = new User(rs.getString("id"), rs.getString("name"),
-                    rs.getString("password"));
-        }
-
-        rs.close();
-        ps.close();
-        c.close();
-
-        if (user == null) {
-            throw new EmptyResultDataAccessException(1);
-        }
-        return user;
+    public List<User> getAll(){
+        String sql="select * from user order by id";
+        return this.jdbcTemplate.query(sql, rowMapper);
     }
 }

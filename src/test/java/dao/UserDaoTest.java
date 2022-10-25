@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
@@ -29,7 +30,7 @@ class UserDaoTest {
         this.userDao = context.getBean("localUserDao",UserDao.class);
         this.user1 =new User("0","nana","123");
         this.user2 =new User("1","rara","456");
-        this.user3 =new User("0","mimi","789");
+        this.user3 =new User("2","mimi","789");
     }
 
     @Test
@@ -55,5 +56,18 @@ class UserDaoTest {
             userDao.deleteAll();
             userDao.findById("0");
         });
+    }
+
+    @Test
+    @DisplayName("없을때 빈 리스트 리턴하는지 있을때 개수만큼 리턴하는지")
+    void getAllTest() throws SQLException {
+        userDao.deleteAll();
+        List<User> user = userDao.getAll();
+        assertEquals(0,user.size());
+        userDao.add(user1);
+        userDao.add(user2);
+        userDao.add(user3);
+        user = userDao.getAll();
+        assertEquals(3,user.size());
     }
 }
