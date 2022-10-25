@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserDaoTest {
     @Test
     void addAndFindById() throws SQLException, ClassNotFoundException {
-        UserDao userDao = new UserDao();
-        String id ="17";
+        UserDao userDao = new UserDaoFactory().localUserDao();
+        String id ="20";
         User user =new User(id,"kahyun","123456");
         userDao.add(user);
 

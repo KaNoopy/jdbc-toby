@@ -9,9 +9,10 @@ import java.util.Map;
 public class UserDao {
     ConnectonMaker connectonMaker;
 
-    public UserDao() {
+    public UserDao(LocalConnection localConnection) {
         this.connectonMaker = new LocalConnection();
     }
+
     public void add(User user) throws SQLException {
         Connection c = connectonMaker.makeConnection();
         PreparedStatement ps =c.prepareStatement("insert into user(id,name,password) values(?,?,?);");
